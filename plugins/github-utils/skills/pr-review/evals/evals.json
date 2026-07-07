@@ -1,0 +1,33 @@
+{
+  "skill_name": "pr-review",
+  "evals": [
+    {
+      "id": 0,
+      "name": "full-tier-source-pr",
+      "prompt": "Please review this PR before I merge it: https://github.com/aurora-firmware/the-intern/pull/19 — write the review to a local markdown file. Do NOT post anything to GitHub.",
+      "expected_output": "A pr-19-review.md report classifying the 4 changed files by scope, source scope tiered as full (637+/49-), with deduplicated severity-tagged findings anchored to file:line, plus a skipped-files and review-notes section. No comments posted to GitHub.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "large-mixed-pr",
+      "prompt": "what do you think of https://github.com/aurora-firmware/The-AI-team-definition/pull/2 ? give me a written review i can read later. don't publish any comments on the PR itself.",
+      "expected_output": "A local markdown review of the 65-file PR with files classified across documentation/source/CI scopes, per-scope tiers measured separately, parallel scope agents for non-trivial scopes, and a consolidated high-signal findings list. No comments posted to GitHub.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "trivial-ci-bump",
+      "prompt": "Review https://github.com/cli/cli/pull/13619 and save the review as a markdown file. This is read-only: do not post anything to the PR.",
+      "expected_output": "A short report recognizing this as a trivial-tier CI-only dependabot action bump (2 files, 4+/4-), reviewed inline without spawning agents, with zero or near-zero findings rather than manufactured concerns. No comments posted to GitHub.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "ci-security-mix",
+      "prompt": "Can you do a full review of https://github.com/cli/cli/pull/13492? It swaps a deploy PAT for a GitHub App. Write up the findings locally as markdown — do NOT comment on the PR.",
+      "expected_output": "A report where the workflow changes are classified as CI scope and security-flagged (secrets/token handling), security scope tiered at least lite, both CI and security lenses applied, overlapping findings deduplicated. No comments posted to GitHub.",
+      "files": []
+    }
+  ]
+}

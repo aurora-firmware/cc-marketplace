@@ -1,0 +1,16 @@
+{
+  "name": "github-utils",
+  "description": "Bundles GitHub CLI guidance and PR review workflows for Claude Code.",
+  "version": "1.0.0",
+  "author": {
+    "name": "cc-marketplace maintainers"
+  },
+  "keywords": [
+    "github",
+    "gh",
+    "pull-request",
+    "review"
+  ],
+  "homepage": "https://code.claude.com/docs/en/plugins",
+  "license": "MIT"
+}

@@ -1,0 +1,26 @@
+{
+  "name": "cc-marketplace",
+  "owner": {
+    "name": "cc-marketplace maintainers"
+  },
+  "description": "A local Claude Code marketplace for reusable plugins.",
+  "plugins": [
+    {
+      "name": "github-utils",
+      "displayName": "GitHub Utils",
+      "source": "./plugins/github-utils",
+      "description": "GitHub CLI and pull request review skills bundled as a Claude Code plugin.",
+      "version": "1.0.0",
+      "author": {
+        "name": "cc-marketplace maintainers"
+      },
+      "keywords": [
+        "github",
+        "gh",
+        "pull-request",
+        "review"
+      ],
+      "category": "Developer Tools"
+    }
+  ]
+}

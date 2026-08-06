@@ -1,0 +1,54 @@
+{
+  "skill_name": "changelog",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Can you draft Keep a Changelog notes for the bob 0.2.0 release in this repo? Just show me the draft — don't touch GitHub yet, I want to review it first.",
+      "expected_output": "A single markdown draft for tag 0.2.0 with only the Keep a Changelog sections that have content (from Added/Changed/Deprecated/Removed/Fixed/Security). Added should mention interactive bob chat (push-channel delivery / session routing) and the scheduler channel adapter + `bob schedule` CLI. Fixed should mention chat.send dropping params.id (B-008), the admin-rpc shutdown timeout (B-011), and internal doc links removed from shipped docs (B-010). No chore(tasks)/docs(tasks) bookkeeping commits, T-NNN task references, or raw commit subjects should leak into the bullets. No gh release edit should be run — draft only.",
+      "files": [],
+      "expectations": [
+        "A single draft file for tag 0.2.0 was created in outputs/",
+        "The draft uses only valid Keep a Changelog section headers (Added/Changed/Deprecated/Removed/Fixed/Security) and omits empty sections",
+        "Added mentions interactive bob chat with push-channel delivery and per-session routing",
+        "Added mentions the scheduler channel adapter and the bob schedule CLI",
+        "Fixed mentions the chat.send params.id bug (B-008)",
+        "Fixed mentions the admin-rpc shutdown timeout fix (B-011)",
+        "Fixed mentions internal project links being removed from shipped docs (B-010)",
+        "No bullet is a raw/unedited commit subject, and no bullet's content is internal process bookkeeping (chore(tasks), docs(tasks) review verdict, or a bare T-NNN/B-NNN reference with no described change)",
+        "No gh release edit/create/delete command was run — SUMMARY.md confirms draft-only"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to regenerate changelog drafts for 0.4.0 and 0.4.1 in keepachangelog.com format, same as what we did for the other releases. Just generate the files for now, I'll review before we publish anything to GitHub.",
+      "expected_output": "Two markdown drafts, one for 0.4.0 and one for 0.4.1. 0.4.0 should cover the JSON-backed schedule store replacing the legacy format, loading entries at startup, and periodic/scheduled admission no longer requiring a per-entry UUID policy rule (ADR-012). 0.4.1 should cover the per-entry working-directory feature for scheduled jobs (--cwd, pi_agent_cwd config), file-backed schedule prompts (--file), and the batch of bug fixes (roughly B-016 through B-024) described as user-facing outcomes rather than as a flat list of every internal commit or CI-flake fix. Neither draft should contain chore(tasks)/docs(tasks) bookkeeping bullets or raw T-NNN/B-NNN-only commit subjects. No gh release edit should be run — draft only.",
+      "files": [],
+      "expectations": [
+        "Two draft files, one for 0.4.0 and one for 0.4.1, were created in outputs/",
+        "Both drafts use only valid Keep a Changelog section headers and omit empty sections",
+        "0.4.0's draft mentions the JSON-backed schedule store replacing the legacy format",
+        "0.4.0's draft mentions loading schedule entries from the store at startup",
+        "0.4.0's draft mentions scheduled/periodic firings no longer requiring a per-entry UUID policy rule (ADR-012)",
+        "0.4.1's draft mentions the per-entry working directory feature for scheduled jobs (--cwd and/or pi_agent_cwd)",
+        "0.4.1's draft mentions file-backed schedule prompts (--file)",
+        "0.4.1's Fixed section describes bug fixes as user-facing outcomes rather than as a raw enumeration of every internal commit or bug ID with no explanation",
+        "Neither draft contains chore(tasks)/docs(tasks) bookkeeping bullets or bullets whose only content is a T-NNN/B-NNN reference",
+        "No gh release edit/create/delete command was run"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Generate changelog drafts for the last 3 releases of the-intern repo, keepachangelog format. Don't publish yet, I want to see them first.",
+      "expected_output": "Drafts for whichever 3 tags are actually last per `git tag -l | sort -V` (currently 0.4.0, 0.4.1, 0.5.0), each correctly scoped to that tag's own commit range with no overlap or misattribution between adjacent releases, each in valid Keep a Changelog format with no process-noise bullets. No gh release edit should be run — draft only.",
+      "files": [],
+      "expectations": [
+        "The output explicitly identifies which 3 tags 'the last 3 releases' resolved to, and they are 0.4.0, 0.4.1, and 0.5.0",
+        "Three draft files were created, one per resolved tag",
+        "Each draft is scoped to that tag's own commit range — content that clearly belongs to one release (e.g. the 0.5.0 bob-companion plugin) does not also appear in an adjacent release's draft",
+        "All three drafts use only valid Keep a Changelog section headers and omit empty sections",
+        "No draft contains chore(tasks)/docs(tasks) bookkeeping bullets or bullets whose only content is a T-NNN/B-NNN reference",
+        "No gh release edit/create/delete command was run"
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "name": "github-utils",
-  "description": "Bundles GitHub CLI guidance, PR review workflows, and issue creation for Claude Code.",
-  "version": "1.1.0",
+  "description": "Bundles GitHub CLI guidance, PR review workflows, issue creation, and changelog generation for Claude Code.",
+  "version": "1.2.0",
   "author": {
     "name": "cc-marketplace maintainers"
   },
@@ -10,7 +10,9 @@
     "gh",
     "pull-request",
     "review",
-    "issue"
+    "issue",
+    "changelog",
+    "release-notes"
   ],
   "homepage": "https://code.claude.com/docs/en/plugins",
   "license": "MIT"

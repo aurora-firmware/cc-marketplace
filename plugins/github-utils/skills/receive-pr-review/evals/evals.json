@@ -1,0 +1,48 @@
+{
+  "skill_name": "receive-pr-review",
+  "evals": [
+    {
+      "id": 0,
+      "name": "reconcile-resolved-github-threads",
+      "prompt": "I got review feedback on https://github.com/aurora-firmware/the-intern/pull/19 a while back and already responded to most of it on GitHub. Can you go through pr-19-review.md and update it with what's actually resolved? Don't post anything new to GitHub.",
+      "expected_output": "receive-pr-review fetches the PR's GitHub review comments and finds each of the 4 seeded findings already has a developer reply on GitHub, then updates the report: the close()-races-interleaved-notifications finding (admin_rpc.rs:149) to Fixed, citing commit 0373695/23ffe0e; the params.session-ignored finding (chat.rs:209) and the tokio::select!-drops-recv-future finding (chat.rs:182) to Acknowledged, citing that they're intentionally deferred and tracked in CR-001; and the method-plus-non-null-id edge case (admin_rpc.rs:251) to Acknowledged as unreachable today per the existing GitHub reply. No findings are fabricated or re-triaged from scratch since the developer's real reasoning is already on GitHub — the annotations paraphrase it rather than inventing new rationale. No GitHub replies posted (not requested, and nothing new to say).",
+      "files": [
+        {
+          "path": "pr-19-review.md",
+          "content": "# PR Review: aurora-firmware/the-intern#19 — bob chat + admin_rpc improvements\n\n## Summary\n4 findings.\n\n| Scope | Files | Lines changed | Tier | Findings |\n|---|---|---|---|---|\n| source | 2 | 470 | full | 4 |\n\n## Findings\n### Source\n#### [warning] `close()` races interleaved notification frames — `the-intern/service/crates/bob/src/client/admin_rpc.rs:149`\nThe close handshake reads one frame and assumes it's the close response; a notification arriving first would be misread as the response.\n**Status:** Open\n\n#### [suggestion] `params.session` sent by the client is silently ignored by the server — `the-intern/service/crates/bob/src/cli/commands/chat.rs:209`\n`build_chat_send_params` sets `params.session` but nothing on the server side reads it.\n**Status:** Open\n\n#### [suggestion] `tokio::select!` drops the in-flight `recv()` future — `the-intern/service/crates/bob/src/cli/commands/chat.rs:182`\nA latent hazard, pre-existing: `tokio::select!` drops the `subscription.recv()` future whenever the other branch fires first.\n**Status:** Open\n\n#### [suggestion] Frame with both `method` and a non-null `id` is misclassified — `the-intern/service/crates/bob/src/client/admin_rpc.rs:251`\nA server-initiated request frame (has both `method` and a non-null `id`) would be treated as a notification by `is_notification`.\n**Status:** Open\n\n## Skipped files\nNone.\n\n## Review notes\nFull-tier review, source surrounding code read for both files.\n\n**Reviewed through commit:** `23ffe0eb7`\n\n## Re-review log\n<no re-reviews yet>\n"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "fix-and-clarify-new-finding",
+      "prompt": "pr-19-review.md has a new finding I haven't dealt with yet — can you go through it and figure out what needs doing? This is for https://github.com/aurora-firmware/the-intern/pull/19. Don't touch GitHub.",
+      "expected_output": "Since no reviewer or developer has weighed in on this specific finding (no matching GitHub comment exists), receive-pr-review can't apply a confident one-line fix for an unbounded wait — it triages this as either 'needs clarification' (e.g. asking whether callers already enforce a timeout at a higher layer, or whether the underlying socket read times out) or as a 'valid, large/ambiguous' finding describing what a real fix would require, without inventing a specific timeout duration or silently declaring it fixed. The report gets exactly one new annotation reflecting that decision, added under the existing finding text. No GitHub posts (not requested).",
+      "files": [
+        {
+          "path": "pr-19-review.md",
+          "content": "# PR Review: aurora-firmware/the-intern#19 — bob chat + admin_rpc improvements\n\n## Summary\n1 finding.\n\n| Scope | Files | Lines changed | Tier | Findings |\n|---|---|---|---|---|\n| source | 1 | 470 | full | 1 |\n\n## Findings\n### Source\n#### [warning] `Subscription::call` waits indefinitely for a matching response id — `the-intern/service/crates/bob/src/client/admin_rpc.rs:143`\n`call()`'s read loop has no timeout or cancellation — if the server never sends a response with the matching id, the awaiting caller hangs forever.\n**Status:** Open\n\n## Skipped files\nNone.\n\n## Review notes\nFull-tier review, source surrounding code read.\n\n**Reviewed through commit:** `23ffe0eb7`\n\n## Re-review log\n<no re-reviews yet>\n"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "no-report-found",
+      "prompt": "Can you go through the PR review feedback for https://github.com/cli/cli/pull/13619 and let me know what to do?",
+      "expected_output": "receive-pr-review looks for pr-13619-review.md, doesn't find one, and tells the user there's nothing to triage — suggesting they run the pr-review skill first rather than fabricating findings from scratch or silently falling back to only reading GitHub comments.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "opt-in-github-sync-draft-only",
+      "prompt": "Go through pr-19-review.md for https://github.com/aurora-firmware/the-intern/pull/19 and draft replies to post on GitHub for anything unresolved once you're done — but don't actually post them yet, I want to review the drafts first.",
+      "expected_output": "receive-pr-review triages the seeded finding (the Subscription::call timeout, same as eval 1) and, because GitHub sync was explicitly requested, drafts a reply for it alongside the local report annotation, then shows the draft to the user for review. It does not call the GitHub API to post anything, since the user explicitly asked to review before posting and no confirmation to post was given in this conversation — same read-only publish gate pr-review itself follows.",
+      "files": [
+        {
+          "path": "pr-19-review.md",
+          "content": "# PR Review: aurora-firmware/the-intern#19 — bob chat + admin_rpc improvements\n\n## Summary\n1 finding.\n\n| Scope | Files | Lines changed | Tier | Findings |\n|---|---|---|---|---|\n| source | 1 | 470 | full | 1 |\n\n## Findings\n### Source\n#### [warning] `Subscription::call` waits indefinitely for a matching response id — `the-intern/service/crates/bob/src/client/admin_rpc.rs:143`\n`call()`'s read loop has no timeout or cancellation — if the server never sends a response with the matching id, the awaiting caller hangs forever.\n**Status:** Open\n\n## Skipped files\nNone.\n\n## Review notes\nFull-tier review, source surrounding code read.\n\n**Reviewed through commit:** `23ffe0eb7`\n\n## Re-review log\n<no re-reviews yet>\n"
+        }
+      ]
+    }
+  ]
+}

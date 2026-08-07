@@ -4,6 +4,7 @@
 
 - `gh-cli`
 - `pr-review`
+- `receive-pr-review`
 - `new-issue`
 - `changelog`
 
@@ -11,6 +12,7 @@
 
 - `/github-utils:gh-cli`
 - `/github-utils:pr-review`
+- `/github-utils:receive-pr-review`
 - `/github-utils:new-issue`
 - `/github-utils:changelog`
 

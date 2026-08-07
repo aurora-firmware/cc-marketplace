@@ -105,7 +105,7 @@ block under it, preserving the original finding text above untouched:
 <original finding body>
 
 > **Developer:** <your note — what you did, or your question, or your rationale>
-**Status:** Fixed | Won't Fix | Needs Clarification
+**Status:** Open | Fixed | Won't Fix | Needs Clarification
 ```
 
 For a finding that already had an annotation from a previous round (e.g.

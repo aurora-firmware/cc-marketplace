@@ -6,17 +6,22 @@ description: >-
   code, documentation, CI, security), measures each scope's complexity,
   spawns scoped reviewer agents, deduplicates their findings, writes a local
   markdown report, and offers to publish the findings as inline comments on
-  the PR. Use this whenever the user asks to review, assess, or critique a
-  GitHub pull request — a PR URL, a PR number, "review PR 19", "what do you
-  think of this pull request", "look at this PR before I merge" — even if
-  they don't say the word "review". Do not use it for reviewing local
-  uncommitted changes or a local branch diff that has no PR.
+  the PR. If a pr-<number>-review.md report already exists for the PR, it
+  re-reviews only the new commits and the developer's responses instead of
+  repeating the full review — use this for "check if PR 19 addressed my
+  feedback" or simply re-running the skill on a PR already reviewed. Use
+  this whenever the user asks to review, assess, or critique a GitHub pull
+  request — a PR URL, a PR number, "review PR 19", "what do you think of
+  this pull request", "look at this PR before I merge" — even if they don't
+  say the word "review". Do not use it for reviewing local uncommitted
+  changes or a local branch diff that has no PR.
 ---
 
 # pr-review
 
 Review an open GitHub pull request end to end: fetch, classify, size, review
-with scoped agents, consolidate, report, and optionally publish.
+with scoped agents, consolidate, report, and optionally publish. If a report
+already exists for this PR, re-review it instead — see Step 0.
 
 The goal is a **high-signal review**: a handful of findings a maintainer
 would thank you for, not a wall of nitpicks. Every step below exists to
@@ -29,6 +34,22 @@ Severity scale used throughout:
 - `critical` — exploitable vulnerability, data loss, or will break things for users
 - `warning` — likely bug, measurable regression, or misleading documentation
 - `suggestion` — a real improvement worth considering, not a style preference
+
+## Step 0 — Determine review mode
+
+Resolve the PR reference the same way Step 1 does below (URL,
+`owner/repo#N`, bare number against the current repo, or the current
+branch's PR) — you need the PR number before you can check for a prior
+report.
+
+Check the working directory (or wherever the user asked for the report) for
+`pr-<number>-review.md`:
+
+- **Not found** — this is the first review. Continue with Step 1 below.
+- **Found** — a review already exists for this PR. Do not restart the full
+  review process. Instead, read `references/re-review.md` and follow it in
+  place of Steps 1–8: it reviews only what changed since the last round and
+  the developer's response to the prior findings.
 
 ## Step 1 — Fetch the PR
 
@@ -200,11 +221,39 @@ user asked). Use this structure:
 
 ## Review notes
 <what was and wasn't examined: tiers applied, context read or not, truncated patches, etc.>
+
+**Reviewed through commit:** `<headRefOid>`
+
+## Re-review log
+<no re-reviews yet>
 ```
 
 The "Review notes" section keeps the report honest — a lite-tier diff-only
 review and a full-tier contextual review carry different weight, and the
 reader should know which they got.
+
+`**Reviewed through commit:**` and the **Re-review log** section exist for
+the loop this report is part of: if this skill runs again later against the
+same PR, Step 0 finds this file and switches to re-review mode
+(`references/re-review.md`), which uses these fields to diff only what
+changed since this run and to record each subsequent round. Leave the log
+as `<no re-reviews yet>` on a first-time review — re-review appends to it,
+this step never does.
+
+A finding may later grow an annotation block once a developer has responded
+to it via the `receive-pr-review` skill, or once a re-review round has
+reconciled it:
+
+```markdown
+#### [<severity>] <title> — `<file>:<line>`
+<body>
+
+> **Developer:** <note>
+**Status:** Open | Fixed | Won't Fix | Needs Clarification
+```
+
+Don't add this block yourself on a first-time review — a finding with no
+annotation is implicitly `Open`.
 
 ## Step 8 — Offer to publish
 
@@ -225,3 +274,4 @@ humans.
 - `references/ci.md` — CI scope: flag/don't-flag boundaries
 - `references/security.md` — security scope: flag/don't-flag boundaries
 - `references/publishing.md` — exact gh api calls for publishing inline comments (read only at Step 8)
+- `references/re-review.md` — full re-review flow, read only when Step 0 finds an existing report

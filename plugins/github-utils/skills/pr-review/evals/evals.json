@@ -28,6 +28,18 @@
       "prompt": "Can you do a full review of https://github.com/cli/cli/pull/13492? It swaps a deploy PAT for a GitHub App. Write up the findings locally as markdown — do NOT comment on the PR.",
       "expected_output": "A report where the workflow changes are classified as CI scope and security-flagged (secrets/token handling), security scope tiered at least lite, both CI and security lenses applied, overlapping findings deduplicated. No comments posted to GitHub.",
       "files": []
+    },
+    {
+      "id": 4,
+      "name": "re-review-confirms-fix-and-finds-new-diff",
+      "prompt": "Please re-review https://github.com/aurora-firmware/the-intern/pull/19 — I already have a pr-19-review.md from an earlier round and pushed new commits since then. Update the same file, don't post anything to GitHub.",
+      "expected_output": "Step 0 detects the existing pr-19-review.md and switches to re-review mode instead of starting a full review. It reads 'Reviewed through commit: 54955c026', diffs it against the PR's current head (23ffe0eb7), confirms the finding annotated Fixed (citing commit 037369533, the interleaved-notifications fix in admin_rpc.rs's close()) since that commit is indeed in the new commit range, reviews only the new commits (e5f8e6fd9, 037369533, 23ffe0eb7) for fresh issues rather than re-reviewing the whole PR, updates the report in place (refreshed statuses, Reviewed through commit bumped to 23ffe0eb7, a new Re-review log line), and leaves the still-open params.session finding untouched since nothing in the new diff addresses it. No comments posted to GitHub.",
+      "files": [
+        {
+          "path": "pr-19-review.md",
+          "content": "# PR Review: aurora-firmware/the-intern#19 — bob chat + admin_rpc improvements\n\n## Summary\n2 findings from the prior round.\n\n| Scope | Files | Lines changed | Tier | Findings |\n|---|---|---|---|---|\n| source | 2 | 470 | full | 2 |\n\n## Findings\n### Source\n#### [warning] `close()` races interleaved notification frames — `the-intern/service/crates/bob/src/client/admin_rpc.rs:149`\nThe close handshake reads one frame and assumes it's the close response; a notification arriving first would be misread as the response.\n\n> **Developer:** Fixed in `037369533` — close() now loops with is_notification and discards notification frames until the close response arrives.\n**Status:** Fixed\n\n#### [suggestion] `params.session` sent by the client is silently ignored by the server — `the-intern/service/crates/bob/src/cli/commands/chat.rs:209`\n`build_chat_send_params` sets `params.session` but nothing on the server side reads it.\n**Status:** Open\n\n## Skipped files\nNone.\n\n## Review notes\nFull-tier review, source surrounding code read for both files.\n\n**Reviewed through commit:** `54955c026`\n\n## Re-review log\n<no re-reviews yet>\n"
+        }
+      ]
     }
   ]
 }

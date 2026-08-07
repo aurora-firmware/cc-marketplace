@@ -31,7 +31,10 @@ gh api repos/<owner>/<repo>/pulls/<N>/reviews --paginate
 
 Only comments/reviews newer than the last round matter for reconciliation —
 compare timestamps against the most recent entry in the report's
-**Re-review log**.
+**Re-review log**. On the first re-review, that log has no entries yet
+(it reads `<no re-reviews yet>`) — in that case, treat every GitHub
+comment/review not already represented as a finding in the report as
+relevant.
 
 ## 3. Compute the new diff
 
@@ -47,8 +50,10 @@ Diff from the report's recorded commit to the PR's current `headRefOid`:
   gh api repos/<owner>/<repo>/compare/<reviewed-through-sha>...<headRefOid>
   ```
 
-If the two SHAs are identical, there's nothing new to review — skip to
-Step 4 (reconciliation) and tell the user no new commits were found.
+If the two SHAs are identical, there's no new diff — skip Step 7 (there's
+nothing to review), but still run Steps 4–6 (reconciliation), since a
+developer's annotations may have changed since the last round even without
+new commits. Tell the user no new commits were found.
 
 ## 4. Reconcile findings marked `Fixed`
 
@@ -109,9 +114,10 @@ just because it was part of the original PR.
 - Append newly found issues (Step 7) under their scope's existing section,
   in the same finding format as a full review.
 - Overwrite `**Reviewed through commit:**` with the new `headRefOid`.
-- Append one line to **Re-review log**:
+- Update **Re-review log**: replace the `<no re-reviews yet>` placeholder
+  with your first entry; on later rounds, append below the existing
+  entries instead:
   ```markdown
-  ## Re-review log
   - <date> @ `<headRefOid short>`: <N> finding(s) confirmed fixed, <N>
     reopened, <N> new finding(s) added
   ```

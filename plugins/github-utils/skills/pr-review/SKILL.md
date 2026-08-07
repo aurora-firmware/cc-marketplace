@@ -252,6 +252,12 @@ reconciled it:
 **Status:** Open | Fixed | Won't Fix | Needs Clarification
 ```
 
+Re-review additionally sets `Fixed (confirmed <date>)` once a fix is
+verified, and `Acknowledged` once a `Won't Fix` or resolved
+`Needs Clarification` is reconciled — see `references/re-review.md`. Only
+re-review writes those two values; a developer's own annotation stays
+within the four values above.
+
 Don't add this block yourself on a first-time review — a finding with no
 annotation is implicitly `Open`.
 

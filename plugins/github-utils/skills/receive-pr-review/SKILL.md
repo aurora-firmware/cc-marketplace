@@ -95,6 +95,10 @@ existing GitHub reply, decide one of:
   an architecture doc, not a bare preference. "This is intentional because
   X" needs an X that holds up.
 
+These map onto Step 5's status values: fix now → `Fixed`; describe-only →
+`Open` (with the description as the developer note); needs clarification →
+`Needs Clarification`; disagree → `Won't Fix`.
+
 ## Step 5 — Update the report
 
 For every item that came from the report (Step 2), write the annotation
@@ -107,6 +111,11 @@ block under it, preserving the original finding text above untouched:
 > **Developer:** <your note — what you did, or your question, or your rationale>
 **Status:** Open | Fixed | Won't Fix | Needs Clarification
 ```
+
+If the outcome is `Fixed`, commit the change first and cite the commit SHA
+in the note (e.g. `` Fixed in `a3f9c2d` — switched to ... ``) — re-review
+verifies a `Fixed` claim against the PR's actual commit history, so an
+uncommitted or unpushed fix won't be found and will just get reopened.
 
 For a finding that already had an annotation from a previous round (e.g.
 `Needs Clarification` that the reviewer already answered in a re-review),
@@ -121,6 +130,10 @@ Show the user a summary grouped by outcome: what was fixed (and where),
 what's pending clarification (with the drafted questions), what was
 declined and why. Call out `critical`-severity findings explicitly
 regardless of outcome.
+
+Remind the user to commit and push any fixes made in this session before
+re-running `pr-review` — re-review only sees what's actually in the PR's
+commit history.
 
 This is local-only by default: the report is updated, nothing is sent to
 GitHub. If the user asks, in this conversation, to also sync to GitHub,

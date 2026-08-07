@@ -18,4 +18,4 @@
 
 ## Notes
 
-The skill contents were initially copied from the local standalone skills directory and kept unchanged so they can be reviewed and refined later.
+The skill contents were initially copied from the local standalone skills directory; `pr-review` and `receive-pr-review` have since been extended with a re-review/response loop (see each skill's `SKILL.md` for details).

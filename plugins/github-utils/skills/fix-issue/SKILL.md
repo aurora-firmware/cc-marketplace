@@ -145,12 +145,37 @@ Then update the issue's `## Status` line (from Step 3) to point at the PR.
 
 ## Step 9 — Review and close the loop
 
-Invoke the `pr-review` skill against the new PR. If it finds anything,
-invoke `receive-pr-review` to triage the findings — fix what's valid and
-small, describe what's valid but large, ask what's unclear, push back with
-a reason on what's a disagreement — then re-run `pr-review` to confirm.
-Report the final state (clean, or what's still open and why) to the user;
-do not merge on the user's behalf.
+This is an iteration, not a single pass — keep cycling review ⇄ response
+until one of the two stopping conditions below is met.
+
+1. Invoke the `pr-review` skill against the PR.
+2. If it comes back clean (no open findings), stop — go to "Done" below.
+3. Otherwise, invoke `receive-pr-review` to triage every open finding: fix
+   what's valid and small, describe what's valid but large, ask what's
+   unclear, push back with a reason on what's a disagreement.
+4. Commit and push anything fixed in Step 3 (`receive-pr-review`'s own
+   process already calls for this — don't skip it, since re-review only
+   sees what's actually in the PR's commit history).
+5. Go back to Step 1 — re-run `pr-review`. A fix can introduce something new,
+   or not fully land; the only way to know is to have the reviewer look
+   again, not to assume it worked.
+
+**Stop iterating** when either:
+
+- `pr-review` returns clean, or
+- every remaining open item is something only the user can resolve — an
+  unanswered `Needs Clarification` question, or a `Won't Fix` the user
+  should weigh in on — with nothing left that this workflow can act on
+  unilaterally.
+
+**Loop guard:** if three rounds pass without converging on one of the above,
+stop anyway and hand the situation back to the user with what's still open
+and why — that pattern usually means something structural (flaky
+verification, a disagreement not actually getting resolved) rather than an
+issue one more round will fix.
+
+**Done:** report the final state (clean, or what's still open and why) to
+the user. Do not merge on the user's behalf.
 
 ## Quality Criteria
 
@@ -176,6 +201,10 @@ do not merge on the user's behalf.
   confirmation checkpoint the user could have redirected.
 - **Re-diagnosing on receive-pr-review** — once Step 9 hands off, follow
   `receive-pr-review`'s own triage rules rather than re-deriving them here.
+- **Treating Step 9 as a single pass** — one review, one triage, one
+  re-review, done. A re-review can surface new or still-open findings just
+  as easily as the first one; keep cycling until clean or blocked on the
+  user, not until one round has happened.
 
 ## References
 

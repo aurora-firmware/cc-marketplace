@@ -10,7 +10,7 @@
       "displayName": "GitHub Utils",
       "source": "./plugins/github-utils",
       "description": "GitHub CLI, pull request review (with re-review and receive-pr-review workflows), issue creation, an end-to-end issue-to-fix workflow, and changelog generation skills bundled as a Claude Code plugin.",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "author": {
         "name": "cc-marketplace maintainers"
       },

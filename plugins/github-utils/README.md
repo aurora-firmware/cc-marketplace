@@ -7,6 +7,7 @@
 - `receive-pr-review`
 - `new-issue`
 - `fix-issue`
+- `release`
 - `changelog`
 
 ## Skills
@@ -16,6 +17,7 @@
 - `/github-utils:receive-pr-review`
 - `/github-utils:new-issue`
 - `/github-utils:fix-issue`
+- `/github-utils:release`
 - `/github-utils:changelog`
 
 ## Notes

@@ -40,6 +40,25 @@ defect, a clearly-specified small task. If the issue is actually a feature
 request or needs design exploration, say so and suggest the project's own
 brainstorm/spec process instead of forcing it through this workflow.
 
+## Two kinds of phase
+
+This workflow has two kinds of step, and they follow different rules.
+
+**GitHub-interface phases** — fetch and triage the issue (Step 1), rewrite the
+issue body (Step 3), open and describe the PR (Step 8), run the review loop and
+close the issue (Step 9). These follow GitHub conventions and this skill's own
+procedure, and the review loop runs through the `pr-review` / `receive-pr-review`
+skills.
+
+**The local development phase** — diagnose (Step 2), branch (Step 4), implement
+(Step 5), verify (Step 6), commit (Step 7). This phase follows the **project's
+own coding guidelines, development architecture, standards, and skills** wherever
+they exist — the step-by-step below is a fallback for a project that defines
+none. The code the fix produces is expected to conform to the project's style
+guides, module and layer boundaries, dependency rules, and anything an ADR or
+design doc constrains; the Step 9 review checks the change against those, not
+only whether the bug is fixed.
+
 ## Step 1 — Fetch the issue
 
 Resolve the issue the same way `pr-review` resolves a PR: a URL,
@@ -57,11 +76,12 @@ whether to proceed rather than assuming this is fresh work.
 
 Do not write or edit implementation code in this step.
 
-If the project has its own diagnosis/debugging skill (for example a `debug`
-skill in its `.claude/skills/`), use it for this step and adapt its output
-to the fix contract below instead of whatever lifecycle-file trail it
-normally produces — this workflow keeps the diagnosis on the issue itself,
-not in a separate file. Otherwise, follow this lightweight procedure:
+If the project has its own diagnosis/debugging process or skill (for example a
+`debug` skill in its `.claude/skills/`), follow it as the project defines it.
+Whatever artifacts that process produces, summarize the resulting root cause
+into the issue's `## Diagnosis` section per Step 3 — that summary belongs on the
+issue regardless of what else the project's process records. If the project
+defines no such process, follow this lightweight procedure:
 
 1. **Reproduce or confirm** — run the failing case, or, when a live
    reproduction isn't practical, confirm the defect by reading the
@@ -110,16 +130,25 @@ Confirm the working tree is clean before branching.
 
 ## Step 5 — Implement the fix
 
+If the project documents an implementation discipline — a `tdd` skill, a
+testing section in CONTRIBUTING, per-language coding guidelines — follow it for
+this step, the same way Step 2 follows the project's diagnosis process. Write
+the fix to the project's coding guidelines and development architecture: its
+style rules, module and layer boundaries, dependency direction, and anything an
+ADR or design doc pins down.
+
 Apply the planned fix from Step 2's fix contract. Keep the diff to what the
 isolated fault requires — this is a fix, not a refactor pass.
 
 ## Step 6 — Verify
 
 Run the project's own build/lint/test commands (check its CLAUDE.md/AGENTS.md
-or README for the canonical ones). Prefer running the specific test(s) that
-exercise the isolated fault before running the broader suite. Where a test
-can't fully cover the behavior (a CLI flow, a generated file's content), add
-a manual verification step and record exactly what you ran and observed.
+or README for the canonical ones), and hold the change to the project's own
+bar for what must pass before work is considered done. Prefer running the
+specific test(s) that exercise the isolated fault before running the broader
+suite. Where a test can't fully cover the behavior (a CLI flow, a generated
+file's content), add a manual verification step and record exactly what you
+ran and observed.
 
 ## Step 7 — Commit
 
@@ -145,6 +174,13 @@ Then update the issue's `## Status` line (from Step 3) to point at the PR.
 
 ## Step 9 — Review and close the loop
 
+The `pr-review` skill runs the review and `receive-pr-review` runs the
+response — those are the reviewers this workflow uses. If the project has its
+own review process that triggers on its own, don't block it, but don't go
+looking for a project review skill, review agent, or checklist to run in place
+of `pr-review`. When `pr-review` runs, hold the change to the project's coding
+guidelines and development architecture, not only to whether the bug is fixed.
+
 This is an iteration, not a single pass — keep cycling review ⇄ response
 until one of the two stopping conditions below is met.
 
@@ -153,11 +189,13 @@ until one of the two stopping conditions below is met.
 3. Otherwise, invoke `receive-pr-review` to triage every open finding: fix
    what's valid and small, describe what's valid but large, ask what's
    unclear, push back with a reason on what's a disagreement.
-4. Commit and push anything fixed in Step 3 (`receive-pr-review`'s own
-   process already calls for this — don't skip it, since re-review only
-   sees what's actually in the PR's commit history).
-5. Go back to Step 1 — re-run `pr-review`. A fix can introduce something new,
-   or not fully land; the only way to know is to have the reviewer look
+4. Make every accepted fix by editing the source directly on the PR's own
+   branch and pushing additive commits to it — the branch the PR merges. Not
+   on a side branch, not in a worktree, not as a separate notes trail;
+   re-review only sees what's committed to that branch (`receive-pr-review`'s
+   own process already calls for pushing these — don't skip it).
+5. Go back to step 1 above — re-run `pr-review`. A fix can introduce something
+   new, or not fully land; the only way to know is to have the reviewer look
    again, not to assume it worked.
 
 **Stop iterating** when either:
@@ -188,6 +226,11 @@ the user. Do not merge on the user's behalf.
 - The diff stays scoped to the isolated fault — no drive-by refactors.
 - Verification is concrete: exact commands run and their outcome, not just
   "tests pass."
+- The local development phase follows the project's own coding guidelines,
+  development architecture, and process skills where they exist; this skill's
+  own diagnose/implement/verify steps are the fallback, not an override.
+- The fix conforms to the project's style, module/layer boundaries, and
+  design-doc/ADR constraints, and the Step 9 review confirms that.
 
 ## Common Pitfalls
 
@@ -205,6 +248,10 @@ the user. Do not merge on the user's behalf.
   re-review, done. A re-review can surface new or still-open findings just
   as easily as the first one; keep cycling until clean or blocked on the
   user, not until one round has happened.
+- **Running the generic development steps when the project has its own** — the
+  GitHub-facing phases (issue triage, PR, review loop) are this skill's;
+  diagnosis, implementation discipline, and coding/architecture standards are
+  the project's wherever it defines them.
 
 ## References
 

@@ -85,35 +85,29 @@ folder to another.
 
 Some repos run their own internal process automation on top of git — a
 ticket-lifecycle bot, an AI-team workflow, a bookkeeping convention recorded
-in their `CLAUDE.md`/`CONTRIBUTING.md` — and it leaves a very recognizable
-trail of process commits once you've seen it. As a concrete example,
-`aurora-firmware/the-intern` runs an AI-team development process (see its
-root `CLAUDE.md`) that produces commits like these — drop commits matching
-these patterns on sight when working in that repo, or a repo with an
-equivalent convention:
+in their `CLAUDE.md`/`CONTRIBUTING.md` — and it leaves a recognizable trail
+of process commits once you've seen it: moving a work item between status
+folders, recording a review verdict, filing a progress report, or closing
+out an internal tracker entry. These typically carry a `chore` or `docs`
+prefix paired with a tracker verb (`move`, `record`, `file`, `merge`,
+`escalate`) rather than describing a change a user of the software would
+notice — e.g. `chore(tasks): move T-004 to completed` or `docs(bugs):
+record B-016 review verdict`.
 
-- `chore(tasks): move T-NNN to ...`, `chore(tasks): record ... work log`,
-  `chore(tasks): merge T-NNN ...`, `chore(tasks): escalate/resume/refresh ...`
-- `chore(bugs): move B-NNN to ...`, `chore(bugs): record ... diagnosis`,
-  `chore(bugs): file B-NNN ...`
-- `docs(tasks): record ... review verdict`, `docs(bugs): record ... review
-  verdict`
-- `docs(reports): add ... progress report`
-- Pure `test(...)` or `style(...)` commits, unless the test coverage change
-  is itself the newsworthy part (rare)
+The test that matters is general, not tied to any one project's naming:
+does this commit change what a user of the software can do, or does it
+only change the state of an internal tracking system? Filter on that
+question, not on the literal examples above — skim a page or two of
+`git log` first if you're not sure what a repo's own bookkeeping
+convention looks like. Pure `test(...)` or `style(...)` commits get the
+same treatment: drop them unless the test coverage change is itself the
+newsworthy part (rare).
 
 Do **not** drop a `feat(...)` or `fix(...)` commit just because it also
 references a task or bug ID — the ID is traceability, the change is real.
 Keep the ID in parentheses at the end of the bullet (e.g. `(B-016)`) when it
 reads naturally; drop it if it doesn't add anything for a reader without
 access to this repo's issue tracker.
-
-In any other repo, the specific patterns above won't apply verbatim, but the
-underlying test does: does this commit change what a user of the software
-can do, or does it only change the state of an internal tracking system?
-Filter on that question, not on the literal strings above — skim a page or
-two of `git log` first if you're not sure what a repo's own bookkeeping
-convention looks like.
 
 ### 4. Categorize what's left
 

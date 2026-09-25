@@ -1,34 +1,29 @@
 ---
 name: fix-issue
 description: >-
-  End-to-end workflow for turning a specific open GitHub issue into a merged
-  fix: fetches the issue, diagnoses the root cause before touching any code,
-  rewrites the issue body into a structured template (Description, Expected
-  Behavior, Actual Behavior, Steps to Reproduce, Logs/Evidence, Diagnosis,
-  Status) with the diagnosis appended, branches off the repo's default
-  branch as `fix/<issue-number>-<short-description>`, implements and
-  verifies the minimal fix, opens a PR that links back to the issue, then
-  hands off to the pr-review and receive-pr-review skills to close the
-  loop. A lighter-weight alternative to a full internal bug-tracking
-  process — no separate ticketing system, no doc trail beyond the issue and
-  the PR themselves. Use whenever the user asks to fix, resolve, work, pick
-  up, or ship a fix for one specific GitHub issue — "fix issue #57", "let's
-  resolve this bug report", "pick up #12 and ship a fix for it", "work
-  through this GitHub issue end to end", "diagnose and fix #90" — even if
-  they don't name this skill directly. Not for triaging which issue to work
-  on next (that's just gh-cli list/read), and not for feature requests or
-  open-ended design work that needs exploration first — route those through
-  the project's own planning or spec process instead. Defers to gh-cli for
-  exact `gh` command syntax, and to pr-review / receive-pr-review for the
-  review loop once a PR is open.
+  End-to-end workflow for turning an open GitHub issue into a merged fix:
+  diagnoses the root cause, rewrites the issue into a structured template,
+  branches, implements and verifies the minimal fix, opens a PR, and runs
+  the review loop via pr-review/receive-pr-review. If no issue is named,
+  surveys open issues and picks the single best well-scoped bug itself. Use
+  whenever asked to fix, resolve, or ship a fix for a GitHub issue, or to
+  pick the next bug and fix it — "fix issue #57", "pick up #12 and ship a
+  fix for it", "choose the next issue and fix it" — even without naming
+  this skill. Not for feature requests or open-ended design work that needs
+  exploration first — route those to the project's own planning process
+  instead. Also supports an opt-in autonomous mode for unattended runs
+  ("fix #N autonomously") that skips confirmation checkpoints and
+  escalates instead of asking when it hits an environment problem or a
+  design decision.
 ---
 
 # fix-issue
 
-Take one specific open GitHub issue from report to merged fix, without
-standing up a separate ticketing/doc-trail system: the issue itself carries
-the diagnosis, the branch and PR carry the fix, and `pr-review` /
-`receive-pr-review` carry the review loop.
+Take one open GitHub issue — named directly, or the best candidate Step 0
+selects — from report to merged fix, without standing up a separate
+ticketing/doc-trail system: the issue itself carries the diagnosis, the
+branch and PR carry the fix, and `pr-review` / `receive-pr-review` carry
+the review loop.
 
 This skill covers the *workflow* — what order to do things in, what to
 diagnose before coding, what template the issue body follows, and when to
@@ -39,16 +34,18 @@ use the `gh-cli` skill — this skill deliberately doesn't repeat that here.
 defect, a clearly-specified small task. If the issue is actually a feature
 request or needs design exploration, say so and suggest the project's own
 brainstorm/spec process instead of forcing it through this workflow.
+(Autonomous mode: this is escalation condition 2 —
+`references/autonomous-mode.md`.)
 
 ## Two kinds of phase
 
 This workflow has two kinds of step, and they follow different rules.
 
-**GitHub-interface phases** — fetch and triage the issue (Step 1), rewrite the
-issue body (Step 3), open and describe the PR (Step 8), run the review loop and
-close the issue (Step 9). These follow GitHub conventions and this skill's own
-procedure, and the review loop runs through the `pr-review` / `receive-pr-review`
-skills.
+**GitHub-interface phases** — choose the issue when none was given (Step 0),
+fetch the issue (Step 1), rewrite the issue body (Step 3), open and describe
+the PR (Step 8), run the review loop and close the issue (Step 9). These
+follow GitHub conventions and this skill's own procedure, and the review loop
+runs through the `pr-review` / `receive-pr-review` skills.
 
 **The local development phase** — diagnose (Step 2), branch (Step 4), implement
 (Step 5), verify (Step 6), commit (Step 7). This phase follows the **project's
@@ -59,18 +56,49 @@ guides, module and layer boundaries, dependency rules, and anything an ADR or
 design doc constrains; the Step 9 review checks the change against those, not
 only whether the bug is fixed.
 
+## Modes: interactive (default) and autonomous
+
+Everything below assumes the **interactive** default: every GitHub-visible
+write is drafted and shown before it happens, and anything this workflow
+can't resolve on its own is put to the user as a question.
+
+An opt-in **autonomous mode** exists for a run with no one to ask
+mid-workflow — invoked explicitly, never assumed. It skips those pauses and
+replaces every "ask the user" moment with one of two escalation conditions
+(an unexpected environment, or a fix needing a design decision). Read
+`references/autonomous-mode.md` in full before running in that mode — it
+covers exactly what changes, the escalation conditions, and the pitfalls
+specific to it. The step-by-step below stays the same either way; only the
+handful of points marked "(Autonomous mode: ...)" diverge.
+
+## Step 0 — Choose the issue, when none was given
+
+Skip this step if the caller already named a specific issue (a URL,
+`owner/repo#N`, a bare number, or one just named from a prior
+conversation) — go straight to Step 1.
+
+Otherwise, read `references/choosing-an-issue.md` for the full triage
+procedure. In short: list open issues, exclude feature requests / unresolved
+disputes / issues already claimed by a branch or PR, rank what's left by
+confirmed-root-cause and isolated-fix over one-off recurrence, and pick the
+top candidate (tie-break: lowest issue number) — the same in both modes. If
+nothing survives, autonomous mode stops and reports; interactive mode asks
+the user how to proceed.
+
 ## Step 1 — Fetch the issue
 
-Resolve the issue the same way `pr-review` resolves a PR: a URL,
-`owner/repo#N`, a bare number against the current repo, or a number the user
-just named from a prior triage conversation.
+Resolve the issue — the one Step 0 picked, or, if the caller already named
+one, the same way `pr-review` resolves a PR: a URL, `owner/repo#N`, a bare
+number against the current repo, or a number the user just named from a
+prior conversation.
 
 ```bash
 gh issue view <N> --json number,title,body,labels,state,url
 ```
 
 If the issue is already closed, or already has a linked PR, say so and ask
-whether to proceed rather than assuming this is fresh work.
+whether to proceed rather than assuming this is fresh work. (Autonomous
+mode: this is escalation condition 1 — `references/autonomous-mode.md`.)
 
 ## Step 2 — Diagnose before touching any code
 
@@ -110,7 +138,8 @@ Show the user the drafted body before writing anything. Editing a GitHub
 issue is visible to everyone with repo access, so **never push the edit
 without explicit confirmation** in the current conversation — same rule
 `new-issue` follows before creating an issue. If the user asks for changes,
-revise and re-show.
+revise and re-show. (Autonomous mode: skip the pause, push the drafted
+body directly — `references/autonomous-mode.md`.)
 
 Once confirmed, use the gh-cli skill for the exact syntax to update the
 issue body.
@@ -126,7 +155,9 @@ Otherwise, the default convention: branch off the repository's default
 branch, named `fix/<issue-number>-<short-description>` — a few hyphenated
 words, not the full issue title.
 
-Confirm the working tree is clean before branching.
+Confirm the working tree is clean before branching. (This doubles as
+autonomous mode's environment check — escalation condition 1,
+`references/autonomous-mode.md`.)
 
 ## Step 5 — Implement the fix
 
@@ -170,6 +201,10 @@ skill for exact syntax. The PR body should:
 - Reference the issue so it auto-closes on merge (`Fixes #<N>`), unless the
   project's convention is to close issues manually.
 
+Show the user the drafted PR body before opening it — same confirmation
+rule as Step 3. (Autonomous mode: skip the pause, open it directly —
+`references/autonomous-mode.md`.)
+
 Then update the issue's `## Status` line (from Step 3) to point at the PR.
 
 ## Step 9 — Review and close the loop
@@ -204,7 +239,8 @@ until one of the two stopping conditions below is met.
 - every remaining open item is something only the user can resolve — an
   unanswered `Needs Clarification` question, or a `Won't Fix` the user
   should weigh in on — with nothing left that this workflow can act on
-  unilaterally.
+  unilaterally. (Autonomous mode: this is escalation condition 2, not a
+  stopping point that waits on the user — `references/autonomous-mode.md`.)
 
 **Loop guard:** if three rounds pass without converging on one of the above,
 stop anyway and hand the situation back to the user with what's still open
@@ -222,7 +258,9 @@ the user. Do not merge on the user's behalf.
 - The issue's original report content is preserved, not deleted, when
   rewritten into the template.
 - No GitHub-visible write (issue edit, PR creation) happens without the
-  user seeing the draft and confirming first.
+  user seeing the draft and confirming first. (Autonomous mode replaces
+  this with the escalation conditions in `references/autonomous-mode.md` —
+  the draft still gets made, it just doesn't wait.)
 - The diff stays scoped to the isolated fault — no drive-by refactors.
 - Verification is concrete: exact commands run and their outcome, not just
   "tests pass."
@@ -241,7 +279,9 @@ the user. Do not merge on the user's behalf.
 - **Assuming the default branch model** — some projects integrate fix
   branches somewhere other than their default branch; check first.
 - **Silent GitHub writes** — editing the issue or opening the PR without a
-  confirmation checkpoint the user could have redirected.
+  confirmation checkpoint the user could have redirected, in interactive
+  mode. (Autonomous mode is the only exception, and only because
+  `references/autonomous-mode.md` says so explicitly.)
 - **Re-diagnosing on receive-pr-review** — once Step 9 hands off, follow
   `receive-pr-review`'s own triage rules rather than re-deriving them here.
 - **Treating Step 9 as a single pass** — one review, one triage, one
@@ -253,7 +293,15 @@ the user. Do not merge on the user's behalf.
   diagnosis, implementation discipline, and coding/architecture standards are
   the project's wherever it defines them.
 
+See `references/choosing-an-issue.md` and `references/autonomous-mode.md`
+for the pitfalls specific to Step 0 and to autonomous mode, respectively.
+
 ## References
 
 - `references/issue-template.md` — the issue-body template and how to fill
   in its Diagnosis and Status sections.
+- `references/choosing-an-issue.md` — the full Step 0 triage procedure;
+  read when no issue was named at invocation.
+- `references/autonomous-mode.md` — everything autonomous mode changes,
+  its two escalation conditions, and its own pitfalls; read before running
+  in that mode.

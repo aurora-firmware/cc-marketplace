@@ -2,24 +2,19 @@
 name: release
 description: >-
   End-to-end workflow for cutting a tagged version release when a CI
-  pipeline builds and publishes the release from the pushed tag: verify the
-  working tree and release branch are ready, fast-forward the release
-  branch, decide the semantic-version bump (major / minor / patch, with the
-  pre-1.0 rule), push a tag that matches the repo's existing tag
-  convention, watch the release workflow run to completion, verify the
-  GitHub Release and the assets the workflow should have attached, and — if
-  the pipeline fails or publishes nothing — triage the run and file a
-  GitHub issue instead of leaving a half-published release. On success,
-  hands off to the changelog skill to replace CI's auto-generated notes
-  with proper release notes. Use whenever the user asks to release, cut a
-  release, ship a version, tag a release, do a release, bump the version
-  and publish, or "push the release tag" — for any repo whose releases are
-  produced by a tag-triggered GitHub Actions workflow. Not for manually
-  hand-built releases with no CI pipeline (use gh-cli's release-mgmt
-  reference directly), and not for writing release notes on their own
-  (that's the changelog skill). Defers to gh-cli for exact `gh` command
-  syntax, to new-issue for the failure issue, and to changelog for the
-  notes.
+  pipeline builds and publishes the release from the pushed tag: verifies
+  preconditions, decides the version bump, pushes the tag, watches the
+  pipeline, and confirms the Release is actually complete — not just that
+  the run went green — filing an issue instead of leaving a half-published
+  release if it fails. Hands off to the changelog skill for proper release
+  notes on success. Use whenever the user asks to release, cut a release,
+  ship a version, tag a release, bump the version and publish, or "push the
+  release tag" — for any repo whose releases come from a tag-triggered
+  GitHub Actions workflow. Not for hand-built releases with no CI pipeline
+  (use gh-cli's release-mgmt reference directly), or for writing release
+  notes on their own (that's the changelog skill). Defers to gh-cli for
+  exact command syntax, new-issue for the failure issue, and changelog for
+  the notes.
 ---
 
 # release

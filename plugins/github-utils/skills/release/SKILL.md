@@ -186,7 +186,7 @@ Replace them with proper notes via the `changelog` skill:
 > Regenerate the GitHub release description for tag `<VERSION>` in Keep a Changelog format,
 > covering all changes since `<LATEST>`.
 
-Review its draft, confirm, let it publish, then re-check `gh release view "$VERSION"`.
+Review its draft, let it publish, then re-check `gh release view "$VERSION"`.
 
 ## Step 10 — Restore the workspace
 

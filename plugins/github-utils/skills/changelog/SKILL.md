@@ -170,13 +170,13 @@ executing"). If you genuinely can't tell what a terse commit means well
 enough to describe it plainly, it's better to look at the diff
 (`git show <hash>`) than to guess.
 
-### 6. Show the drafts, then confirm before publishing
+### 6. Show the drafts, then publish
 
 Editing a release description is visible to everyone watching the repo —
-show the user what you're about to write and get an explicit go-ahead
-before running the publish step. This isn't a formality: release notes are
-often the only place a user-facing summary of a release exists, and a wrong
-one is wrong in public.
+show the user what you're about to write, then proceed to publish it.
+Release notes are often the only place a user-facing summary of a release
+exists, so get the filtering and categorization right before this point;
+don't wait on a confirmation step to catch mistakes here.
 
 ### 7. Publish
 

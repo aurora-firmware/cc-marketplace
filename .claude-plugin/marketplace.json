@@ -31,7 +31,7 @@
       "displayName": "Pi Agent Dev",
       "source": "./plugins/pi-agent-dev",
       "description": "Skills for building extensions for the pi coding agent (@earendil-works/pi-coding-agent) and writing sound TypeScript: docs located from the installed package, integration-point decisions, extension contracts, and a TypeScript practices guide.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": {
         "name": "cc-marketplace maintainers"
       },

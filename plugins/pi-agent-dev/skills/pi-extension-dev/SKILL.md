@@ -17,6 +17,14 @@ description: >-
 
 Pi extensions are TypeScript modules that run **inside the pi process** with its OS permissions. Do not guess the API: the installed docs and examples are the source of truth, and this skill tells you how to find and apply them.
 
+## Five things that are easy to get wrong
+
+1. **Import from `@earendil-works/pi-coding-agent`** (and `@earendil-works/pi-ai`, `@earendil-works/pi-tui`, `typebox`). The older `@mariozechner/pi-coding-agent` name is retired, yet it is what models reach for from memory.
+2. **State the pi version** you read the docs from (Step 0) in your first message about the task, so the user can see the guidance matches their install.
+3. **Tools signal failure by throwing.** Returning text that says "Error" is still a successful result.
+4. **Pi loads TypeScript through `jiti`, with no type checking.** Run `tsc --noEmit` yourself, and tell the user to load the extension with `pi --extension ./file.ts`.
+5. **Embedding pi in another app (SDK, RPC, JSON mode) is not covered by this plugin yet.** Say so, then answer from `docs/sdk.md` and `docs/cli-integration.md`.
+
 ## Step 0: Locate the docs and pin the version
 
 Run the helper from this skill's base directory:
@@ -37,7 +45,7 @@ Optional freshness check after a pi upgrade: `bash <base-directory>/scripts/chec
 
 ## Step 1: Choose the integration point
 
-Read `references/decisions.md` (section "Choosing the mechanism"). Extensions are for executable behavior. If instructions alone suffice, recommend a skill or prompt template instead. Embedding pi in another application (SDK, RPC, JSON mode) is **not covered by this plugin yet**: read `docs/sdk.md` and `docs/cli-integration.md` directly and say so.
+Extensions are for executable behavior. If instructions alone suffice, recommend a skill or prompt template instead (`references/mechanism.md` has the decision table).
 
 | Capability | Main API |
 |---|---|
@@ -54,17 +62,29 @@ Read `references/decisions.md` (section "Choosing the mechanism"). Extensions ar
 
 ## Step 2: Apply the contracts
 
-Read `docs/extensions.md` in full (it is short), then check your design against the contracts in `references/decisions.md`: lifecycle (no side effects in the factory), events and concurrency, tools, state placement, modes (`ctx.mode`, `ctx.hasUI`), errors and cleanup, packaging. When the docs and an example disagree, **the docs win**; `references/decisions.md` lists known cases.
+Read only what your task needs. Each reference is short and complements the matching section of `docs/extensions.md`; read that section too when you are unsure of a contract (list the headings with `grep -n '^##' <DOCS>/extensions.md`, then read the section).
+
+| You are building | Read |
+|---|---|
+| A tool the model calls | `references/tools.md` |
+| A gate, event handler, or anything with startup or cleanup | `references/lifecycle-events.md` |
+| State that must survive fork, rewind, or reload | `references/state-ui.md` (State) |
+| Status line, widget, dialog, custom component, or mode-aware behavior | `references/state-ui.md` (Modes and UI), plus `docs/tui.md` for custom components |
+| Something to share or install | `references/mechanism.md` (Packaging), `docs/packages.md` |
+| A decision between extension, skill, prompt template, or SDK | `references/mechanism.md` |
+| Type questions for tools, events, or state | `references/typing.md` |
+
+When the docs and an example disagree, **the docs win**; `references/pitfalls.md` lists known cases and is worth a glance before you copy from an example.
 
 ## Step 3: Start from the closest example
 
-Look up your task in `references/example-index.md`, then **read that example file before writing code**. Copy its structure, not its shortcuts.
+Pick the closest entry in pi's own annotated map, `examples/extensions/README.md` (grouped by Lifecycle & Safety, Custom Tools, Commands & UI, System Prompt & Compaction, Messages, Providers, and so on), and **read that example file before writing code**. Copy its structure, not its shortcuts.
 
 ## Step 4: Write it
 
 - Default-export a factory `(pi: ExtensionAPI) => void | Promise<void>`. Imports come from `@earendil-works/pi-coding-agent`, `@earendil-works/pi-ai`, `@earendil-works/pi-tui`, and `typebox`; pi supplies these at runtime, so list them as `peerDependencies` (`"*"`) when packaging.
 - Small extension: one `.ts` file. Multi-file: a directory with `index.ts`. Distributed: a pi package with a `pi.extensions` entry in `package.json` (`docs/packages.md`).
-- Pi loads TypeScript through `jiti`: **there is no compile step and no type checking at load**. Run `tsc --noEmit` yourself; see the `typescript-best-practices` skill.
+- For TypeScript conventions and `tsconfig` choices, see the `typescript-best-practices` skill.
 
 ## Step 5: Verify
 

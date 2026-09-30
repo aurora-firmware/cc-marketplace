@@ -1,7 +1,7 @@
 {
   "name": "pi-agent-dev",
   "description": "Expert guidance for building extensions for the pi coding agent: locates the installed pi docs and examples, chooses the right integration point, applies the extension contracts, plus TypeScript best practices.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "cc-marketplace maintainers"
   },

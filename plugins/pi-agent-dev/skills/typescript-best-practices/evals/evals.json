@@ -1,0 +1,33 @@
+{
+  "skill_name": "typescript-best-practices",
+  "evals": [
+    {
+      "id": 0,
+      "name": "review-flawed-snippet",
+      "prompt": "Review this TypeScript for problems:\n\n```ts\nexport async function loadConfig(path: string) {\n  const raw = JSON.parse(await fs.promises.readFile(path, 'utf8')) as Config;\n  const port = raw.port || 8080;\n  fetch(raw.healthUrl);\n  try {\n    return await start(port);\n  } catch (e) {\n    console.log(e.message);\n  }\n}\n```",
+      "expected_output": "The review flags, with concrete fixes: (1) JSON.parse(...) as Config is an unvalidated assertion of external data (High); use unknown plus a type guard or schema validation. (2) raw.port || 8080 swallows a valid port of 0 (Medium); use ??. (3) fetch(raw.healthUrl) is a floating promise with no error handling and no AbortSignal (High). (4) catch (e) reads e.message without narrowing from unknown (Medium) and the error is swallowed after logging, so the function returns undefined on failure (High). It does not nitpick formatting.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "tsconfig-for-jiti-loaded-code",
+      "prompt": "I'm writing a plugin that the host loads with jiti, so there's no build step. What tsconfig and scripts should I set up, and is there anything I should worry about?",
+      "expected_output": "The answer says jiti transpiles without type checking, so type errors will not surface at load and a tsc --noEmit typecheck script is needed, with the host's packages installed as dev dependencies so types resolve. It recommends strict plus noUncheckedIndexedAccess and verbatimModuleSyntax (import type), noEmit, \"type\": \"module\", allowImportingTsExtensions if sibling imports use .ts extensions, peerDependencies for host-supplied packages, avoiding enum/namespace, and a real load smoke test after typechecking. It marks tooling choices (linter/formatter/test runner) as proposals and defers to existing project conventions.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "cancellation-in-async-api",
+      "prompt": "Write a TypeScript function that downloads a list of URLs in parallel and returns the parsed JSON for each. It needs to be cancellable and shouldn't blow up everything if one URL fails.",
+      "expected_output": "The function accepts an AbortSignal and passes it to fetch, uses Promise.allSettled (or per-item error handling) so one failure does not reject the whole batch, returns a discriminated union per URL (ok with value / error with message) rather than mixing shapes, treats parsed JSON as unknown, throws Error with cause where it throws, and bounds concurrency or mentions doing so for large lists. No floating promises and no any.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "negative-non-typescript-task",
+      "prompt": "Write a Python script that renames all .jpeg files in a folder to .jpg.",
+      "expected_output": "The typescript-best-practices skill is not invoked. A Python script is produced.",
+      "files": []
+    }
+  ]
+}

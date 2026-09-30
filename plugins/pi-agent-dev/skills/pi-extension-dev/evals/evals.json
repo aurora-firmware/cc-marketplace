@@ -1,0 +1,47 @@
+{
+  "skill_name": "pi-extension-dev",
+  "evals": [
+    {
+      "id": 0,
+      "name": "confirm-force-push-gate",
+      "prompt": "I use the pi coding agent. Write me a pi extension that asks for confirmation before the agent runs `git push --force` in bash, and blocks it if I say no.",
+      "expected_output": "The session runs locate-pi.sh (or otherwise locates the installed @earendil-works/pi-coding-agent docs) and states the pi version, chooses a tool_call event handler (not a tool or command), and reads examples/extensions/permission-gate.ts before writing. The extension default-exports a factory taking ExtensionAPI, registers pi.on(\"tool_call\", ...) with no side effects in the factory, checks event.toolName === \"bash\" and the command for a force push, uses ctx.ui.confirm or ctx.ui.select when ctx.hasUI is true, and returns { block: true, reason } on refusal. When ctx.hasUI is false it blocks by default (fail safe) rather than allowing. Non-matching calls return undefined. It imports from @earendil-works/pi-coding-agent, never @mariozechner/pi-coding-agent. It tells the user how to load it (pi --extension ./file.ts) and mentions that pi loads via jiti without type checking so tsc --noEmit is a separate step.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "branch-aware-counter-tool",
+      "prompt": "Add a pi extension with a `counter` tool the model can call to increment or reset a named counter, and a /counters command that lists them. The counters need to be correct if I fork the session or go back in the tree.",
+      "expected_output": "The session picks tool-result details as the storage (state that follows the active branch) rather than an external file or pi.appendEntry, and explains why. It reads examples/extensions/todo.ts first. The tool uses a TypeBox schema, with StringEnum from @earendil-works/pi-ai for the action (not Type.Union of Type.Literal), returns { content, details } with details holding the full counter state, and throws (not returns error text) on invalid input such as an unknown action. State is rebuilt on both session_start and session_tree by walking ctx.sessionManager.getBranch() and narrowing entries by type/role/toolName, not by scanning all entries. The /counters command guards ctx.mode !== \"tui\" if it uses a custom component, or uses ctx.ui.notify. No timers or processes are started in the factory.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "tool-that-reloads",
+      "prompt": "I want the agent itself to be able to trigger a reload of pi's extensions and skills after it edits one, via a tool it can call. Write that extension.",
+      "expected_output": "The session recognizes that a tool receives ExtensionContext, which has no reload(), and that ctx.reload() exists only on ExtensionCommandContext (command handlers). It follows examples/extensions/reload-runtime.ts: registers a command that calls await ctx.reload() and treats it as terminal for the handler, plus a tool that queues the command with pi.sendUserMessage(\"/reload-runtime\", { deliverAs: \"followUp\" }). It does not call ctx.reload() from the tool and does not use state from the old runtime after reload.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "embedding-request-defers-to-sdk-docs",
+      "prompt": "I want to embed the pi coding agent in my Express server so each HTTP request runs a prompt and returns the answer. How should I do that?",
+      "expected_output": "The session recognizes this is SDK embedding, not an extension. It says this plugin does not yet include an SDK-embedding skill, reads docs/sdk.md (and docs/cli-integration.md for the process-boundary alternatives) from the installed package, and answers with createAgentSession, session.prompt, and session.dispose in try/finally, using SessionManager.inMemory() if session files are not wanted and noting cwd. It does not invent an extension for this.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "pi-not-installed-fallback",
+      "prompt": "I don't have pi installed on this machine yet, but I want to draft a pi extension that shows the current git branch in the status line. Go ahead.",
+      "expected_output": "locate-pi.sh reports not found (exit 1) or the session otherwise determines pi is not installed. The session tells the user and uses the upstream repo https://github.com/earendil-works/pi (packages/coding-agent docs and examples) as the source, and states that it could not confirm a version. It still chooses ctx.ui.setStatus with a stable key (from a session_start handler, running git via pi.exec), avoids starting a watcher or timer in the factory, and clears the status on session_shutdown. It does not silently fall back to the older @mariozechner/pi-coding-agent package or a docs URL it has not verified.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "negative-unrelated-typescript-task",
+      "prompt": "Refactor this function to use async/await instead of .then chains: function load(id){ return fetch('/api/'+id).then(r=>r.json()).then(d=>d.items); }",
+      "expected_output": "The pi-extension-dev skill is not invoked; nothing about pi is mentioned. (typescript-best-practices may reasonably apply.) The function is rewritten with async/await.",
+      "files": []
+    }
+  ]
+}

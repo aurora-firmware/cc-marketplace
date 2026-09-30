@@ -1,0 +1,17 @@
+{
+  "name": "pi-agent-dev",
+  "description": "Expert guidance for building extensions for the pi coding agent: locates the installed pi docs and examples, chooses the right integration point, applies the extension contracts, plus TypeScript best practices.",
+  "version": "1.0.0",
+  "author": {
+    "name": "cc-marketplace maintainers"
+  },
+  "keywords": [
+    "pi",
+    "pi-agent",
+    "pi-coding-agent",
+    "extensions",
+    "typescript"
+  ],
+  "homepage": "https://code.claude.com/docs/en/plugins",
+  "license": "MIT"
+}

@@ -1,6 +1,6 @@
 # cc-marketplace
 
-A Claude Code plugin marketplace with an initial `github-utils` plugin.
+A Claude Code plugin marketplace with the `github-utils` and `pi-agent-dev` plugins.
 
 ## Structure
 
@@ -10,6 +10,8 @@ This repository follows Claude Code's marketplace layout:
 - `plugins/github-utils/.claude-plugin/plugin.json`
 - `plugins/github-utils/skills/gh-cli/`
 - `plugins/github-utils/skills/pr-review/`
+- `plugins/pi-agent-dev/.claude-plugin/plugin.json`
+- `plugins/pi-agent-dev/skills/`
 
 ## Included plugin
 
@@ -40,4 +42,12 @@ For direct development testing without marketplace install:
 
 ```bash
 claude --plugin-dir ./plugins/github-utils
+```
+
+## Included plugin: pi-agent-dev
+
+`pi-agent-dev` bundles skills for building pi coding agent extensions (`pi-extension-dev`) and writing sound TypeScript (`typescript-best-practices`). Test it with:
+
+```bash
+claude --plugin-dir ./plugins/pi-agent-dev
 ```

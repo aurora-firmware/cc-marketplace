@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Verify that docs/ and examples/ paths cited in markdown files exist in the installed pi package.
 # Usage: check-doc-paths.sh <file.md>...   (package resolved by locate-pi.sh; honours PI_PACKAGE_DIR)
-# Exit 0: all present. Exit 1: some missing. Exit 64: usage. Other: locate-pi.sh failure.
+# Exit 0: all present. Exit 1: some missing. Exit 64: usage. Exit 66: unreadable file. Other: locate-pi.sh failure.
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -16,6 +16,7 @@ pkg="$(printf '%s\n' "$info" | sed -n 's/^PACKAGE=//p')"
 
 missing=0
 for file in "$@"; do
+  [ -r "$file" ] || { echo "cannot read $file" >&2; exit 66; }
   while IFS= read -r cited; do
     if [ ! -e "$pkg/$cited" ]; then
       echo "MISSING: $cited (cited in $file)"

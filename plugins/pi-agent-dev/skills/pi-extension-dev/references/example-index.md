@@ -7,7 +7,8 @@ Map a task to the closest official example. Paths are relative to the installed 
 | Task | Example |
 |---|---|
 | Smallest possible extension with one tool | `examples/extensions/hello.ts` |
-| Registering commands | `examples/extensions/commands.ts` |
+| Register a minimal slash command | `examples/extensions/shutdown-command.ts`, `examples/extensions/todo.ts` |
+| List available slash commands (`pi.getCommands()`) | `examples/extensions/commands.ts` |
 | Extension with npm dependencies | `examples/extensions/with-deps/` |
 
 ## Tools

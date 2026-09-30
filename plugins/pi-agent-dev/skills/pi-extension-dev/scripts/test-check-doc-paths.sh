@@ -45,4 +45,9 @@ out="$(bash "$script" "$tmp/good.md" "$tmp/bad.md" 2>/dev/null)"; rc=$?
 bash "$script" >/dev/null 2>&1; rc=$?
 [ "$rc" -eq 64 ]; assert "no args: exit 64" $?
 
+# 5. An unreadable input file is an error, not a silent pass.
+out="$(bash "$script" "$tmp/does-not-exist.md" 2>/dev/null)"; rc=$?
+[ "$rc" -eq 66 ]; assert "unreadable file: exit 66" $?
+[[ "$out" != *"all cited docs/examples paths exist"* ]]; assert "unreadable file: no success message" $?
+
 [ "$failures" -eq 0 ]

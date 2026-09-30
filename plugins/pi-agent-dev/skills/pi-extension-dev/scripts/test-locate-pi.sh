@@ -13,9 +13,9 @@ assert() { # name, status (0 = pass)
   if [ "$2" -eq 0 ]; then echo "ok   - $1"; else echo "FAIL - $1"; failures=$((failures + 1)); fi
 }
 
-make_pkg() { # dir, package-name, with-docs (yes|no)
+make_pkg() { # dir, package-name, with-docs (yes|no), [version]
   mkdir -p "$1"
-  printf '{\n\t"name": "%s",\n\t"version": "1.2.3"\n}\n' "$2" > "$1/package.json"
+  printf '{\n\t"name": "%s",\n\t"version": "%s"\n}\n' "$2" "${4:-1.2.3}" > "$1/package.json"
   if [ "$3" = "yes" ]; then mkdir -p "$1/docs" "$1/examples"; fi
 }
 
@@ -48,5 +48,49 @@ grep -q "github.com/earendil-works/pi" "$tmp/err"; assert "no docs: stderr gives
 make_pkg "$tmp/old" "@mariozechner/pi-coding-agent" yes
 out="$(run PI_PACKAGE_DIR="$tmp/old" 2>"$tmp/err")"; rc=$?
 [ "$rc" -eq 1 ]; assert "old name: rejected with exit 1" $?
+
+# Isolated PATH with a fake `pi` binary (no npm) resolving into a package tree.
+make_pi_bin() { # bin-dir, cli.js path the fake pi symlinks to
+  mkdir -p "$1"
+  for tool in sed head grep realpath readlink dirname; do
+    ln -sf "$(command -v "$tool")" "$1/$tool"
+  done
+  ln -sf "$2" "$1/pi"
+}
+run_bin() { # bin-dir, cwd, env...
+  local bindir="$1" cwd="$2"; shift 2
+  (cd "$cwd" && env -i PATH="$bindir" "$@" "$BASH" "$script")
+}
+
+# 5. pi found through its binary (symlink into nested dist/bundle/cli.js).
+make_pkg "$tmp/bin pkg/pi-coding-agent" "@earendil-works/pi-coding-agent" yes 4.5.6
+mkdir -p "$tmp/bin pkg/pi-coding-agent/dist/bundle"
+touch "$tmp/bin pkg/pi-coding-agent/dist/bundle/cli.js"
+make_pi_bin "$tmp/pibin" "$tmp/bin pkg/pi-coding-agent/dist/bundle/cli.js"
+out="$(run_bin "$tmp/pibin" "$tmp/cwd" 2>"$tmp/err")"; rc=$?
+assert "pi binary: exit 0" "$rc"
+[[ "$out" == *"PACKAGE=$tmp/bin pkg/pi-coding-agent"$'\n'* ]]; assert "pi binary: prints package root" $?
+[[ "$out" == *"VERSION=4.5.6"* ]]; assert "pi binary: prints version" $?
+[[ "$out" == *"DOCS=$tmp/bin pkg/pi-coding-agent/docs"* ]]; assert "pi binary: prints docs dir" $?
+
+# 6. pi binary resolves into a tree with the old package name: rejected.
+make_pkg "$tmp/oldbin/pkg" "@mariozechner/pi-coding-agent" yes
+mkdir -p "$tmp/oldbin/pkg/dist/bundle"; touch "$tmp/oldbin/pkg/dist/bundle/cli.js"
+make_pi_bin "$tmp/oldpibin" "$tmp/oldbin/pkg/dist/bundle/cli.js"
+out="$(run_bin "$tmp/oldpibin" "$tmp/cwd" 2>"$tmp/err")"; rc=$?
+[ "$rc" -eq 1 ]; assert "pi binary, old name: exit 1" $?
+
+# 7. PWD node_modules wins over the pi binary; differing versions warn on stderr.
+make_pkg "$tmp/cwd/node_modules/@earendil-works/pi-coding-agent" "@earendil-works/pi-coding-agent" yes 1.2.3
+out="$(run_bin "$tmp/pibin" "$tmp/cwd" 2>"$tmp/err")"; rc=$?
+assert "mismatch: exit 0" "$rc"
+[[ "$out" == *"VERSION=1.2.3"* ]]; assert "mismatch: chooses project-local package" $?
+grep -q "1.2.3" "$tmp/err" && grep -q "4.5.6" "$tmp/err" && grep -qi "warning" "$tmp/err"; assert "mismatch: warning names both versions" $?
+grep -qi "using" "$tmp/err"; assert "mismatch: warning says which was chosen" $?
+
+# 8. Same version in both places: no warning.
+make_pkg "$tmp/cwd/node_modules/@earendil-works/pi-coding-agent" "@earendil-works/pi-coding-agent" yes 4.5.6
+out="$(run_bin "$tmp/pibin" "$tmp/cwd" 2>"$tmp/err")"; rc=$?
+[ "$rc" -eq 0 ] && [ ! -s "$tmp/err" ]; assert "same version: no warning" $?
 
 [ "$failures" -eq 0 ]

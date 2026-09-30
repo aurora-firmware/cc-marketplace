@@ -41,6 +41,14 @@ out="$(bash "$script" "$tmp/bad.md" 2>/dev/null)"; rc=$?
 out="$(bash "$script" "$tmp/good.md" "$tmp/bad.md" 2>/dev/null)"; rc=$?
 [ "$rc" -eq 1 ]; assert "multi-file: fails if any file has a missing path" $?
 
+# 3b. dist/ citations are checked too.
+mkdir -p "$pkg/dist/core"; touch "$pkg/dist/core/types.d.ts"
+printf 'Ok `dist/core/types.d.ts` and gone `dist/core/nope.d.ts`.\n' > "$tmp/dist.md"
+out="$(bash "$script" "$tmp/dist.md" 2>/dev/null)"; rc=$?
+[ "$rc" -eq 1 ]; assert "dist: missing dist path fails" $?
+[[ "$out" == *"MISSING: dist/core/nope.d.ts"* ]]; assert "dist: missing path reported" $?
+[[ "$out" != *"MISSING: dist/core/types.d.ts"* ]]; assert "dist: existing path passes" $?
+
 # 4. No arguments is a usage error.
 bash "$script" >/dev/null 2>&1; rc=$?
 [ "$rc" -eq 64 ]; assert "no args: exit 64" $?

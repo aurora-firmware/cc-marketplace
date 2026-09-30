@@ -9,7 +9,7 @@
 
 ## How the docs are found
 
-Nothing from pi's documentation is copied into this plugin. `pi-extension-dev` resolves the installed package's `docs/` and `examples/` at runtime (project `node_modules`, then the global npm root), so the session always reads docs that match the pi version in use. If pi is not installed, it falls back to the upstream repository.
+Nothing from pi's documentation is copied into this plugin. `pi-extension-dev` resolves the installed package's `docs/` and `examples/` at runtime, so the session always reads docs that match the pi version in use. Search order: `$PI_PACKAGE_DIR` (override for non-standard installs), the project's `node_modules`, the package containing the running `pi` binary (found by resolving it and walking up, which covers pi's own installer, pnpm, bun and volta), then the global npm root. If none is found, it falls back to the upstream repository, preferring the release tag for the installed version when it is known.
 
 ## Requirements
 

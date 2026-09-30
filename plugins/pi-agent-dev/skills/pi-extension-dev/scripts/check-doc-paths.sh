@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Verify that docs/ and examples/ paths cited in markdown files exist in the installed pi package.
+# Verify that docs/, examples/ and dist/ paths cited in markdown files exist in the installed pi package.
 # Usage: check-doc-paths.sh <file.md>...   (package resolved by locate-pi.sh; honours PI_PACKAGE_DIR)
 # Exit 0: all present. Exit 1: some missing. Exit 64: usage. Exit 66: unreadable file. Other: locate-pi.sh failure.
 set -euo pipefail
@@ -22,7 +22,7 @@ for file in "$@"; do
       echo "MISSING: $cited (cited in $file)"
       missing=$((missing + 1))
     fi
-  done < <(grep -oE '`(docs|examples)/[^`# ]+' "$file" | tr -d '`' | sort -u || true)
+  done < <(grep -oE '`(docs|examples|dist)/[^`# ]+' "$file" | tr -d '`' | sort -u || true)
 done
 
 if [ "$missing" -gt 0 ]; then

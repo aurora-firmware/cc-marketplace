@@ -25,9 +25,13 @@ Run the helper from this skill's base directory:
 bash <base-directory>/scripts/locate-pi.sh
 ```
 
-- **Exit 0** prints `PACKAGE`, `VERSION`, `DOCS`, `EXAMPLES`. Read docs from `DOCS` and examples from `EXAMPLES`; state the `VERSION` in your first message about the task. Every docs and examples path cited below is relative to `PACKAGE`.
-- **Exit 1** (pi not installed, or only the old `@mariozechner/pi-coding-agent` name): tell the user, and use the upstream repo `https://github.com/earendil-works/pi/tree/main/packages/coding-agent` (`docs/`, `examples/`) as the source. Say which version you could not confirm.
-- **Exit 2** (stripped install): same fallback; the version is still printed.
+It searches, in order: `$PI_PACKAGE_DIR` (env override for non-standard installs), `$PWD/node_modules`, the package that contains the running `pi` binary (resolved through symlinks, so installs from pi's own installer, pnpm, bun or volta are found), then the global npm root.
+
+- **Exit 0** prints `PACKAGE`, `VERSION`, `DOCS`, `EXAMPLES`. Read docs from `DOCS` and examples from `EXAMPLES`; state the `VERSION` in your first message about the task. Every docs and examples path cited below is relative to `PACKAGE`. A `warning: project-local pi X differs from the running pi Y` on stderr means the running pi is not the project's dev dependency: when authoring for the user's installed pi, prefer the running pi's docs by re-running with `PI_PACKAGE_DIR=<the running pi's dir>`.
+- **Exit 1** (not found, or only the old `@mariozechner/pi-coding-agent` name): run `pi --version`.
+  - If it works, pi is installed by a method the locator could not resolve. Tell the user, record that version, ask for (or derive) the install dir, and re-run with `PI_PACKAGE_DIR=<dir>`.
+  - Only if that also fails, or pi is truly absent, tell the user and use the upstream repo as the source (`docs/`, `examples/`): prefer the release tag for the known version if such a tag exists (try `https://github.com/earendil-works/pi/tree/v<version>/packages/coding-agent`), otherwise `https://github.com/earendil-works/pi/tree/main/packages/coding-agent`. Say which you used and which version you could not confirm.
+- **Exit 2** (stripped install): same upstream fallback, preferring the tag for the printed `VERSION` if such a tag exists, else `main`; say which you used.
 
 Optional freshness check after a pi upgrade: `bash <base-directory>/scripts/check-doc-paths.sh <base-directory>/SKILL.md <base-directory>/references/*.md` lists any path this skill cites that no longer exists. If it reports missing paths, list the real directory instead of trusting the citation.
 

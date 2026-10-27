@@ -23,7 +23,7 @@ can trust and follow the text — not about prose taste.
 
 - Tone, voice, or wording preferences
 - Grammar/typo nitpicks unless they change meaning (flag at most a
-  representative example as a single `suggestion`, never one finding per typo)
+  representative example as a single `minor` finding, never one finding per typo)
 - Formatting choices (heading depth, list style) unless they break rendering
 - Missing documentation for things this PR doesn't touch
 - Length or structure opinions

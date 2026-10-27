@@ -23,17 +23,46 @@ Review an open GitHub pull request end to end: fetch, classify, size, review
 with scoped agents, consolidate, report, and optionally publish. If a report
 already exists for this PR, re-review it instead — see Step 0.
 
+## The reviewer's role
+
+The reviewer is one half of a review ⇄ response loop with the developer
+(`receive-pr-review`). The reviewer's job is to **check the developer's work
+against what the developer said it does and against the project's own
+rules**, and to report every place where reality differs:
+
+1. **Claims** — the PR title, description, linked issue and commit messages
+   state what the change achieves. Verify each claim that can be checked:
+   run the tests or the code path when feasible, read the code when not. A
+   claim that doesn't hold is a finding.
+2. **Project rules** — the project's coding guidelines, architecture and
+   contribution rules (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, ADRs,
+   design docs, linter/formatter configs). A change that breaks one is a
+   finding.
+3. **Defects** — bugs, security problems and broken references introduced by
+   the change, found by the scoped reviewers below. These are findings
+   because the change doesn't do what it should, even if nobody claimed it
+   would.
+
+Every finding states **what** is not as it should be and **why** it matters
+(or which claim/rule it contradicts). **A finding never proposes a fix** — no
+patch, no "change X to Y", no "consider using Z". How to resolve it is the
+developer's decision, and the developer may show the finding is mistaken.
+Describe the gap precisely enough to reproduce it, and stop there.
+
+The review ends when the developer has addressed every finding to the
+reviewer's satisfaction (`references/re-review.md`).
+
 The goal is a **high-signal review**: a handful of findings a maintainer
 would thank you for, not a wall of nitpicks. Every step below exists to
 either focus attention (classification, tiering) or remove noise (filtering,
 deduplication, the reasonableness pass). When in doubt, drop a finding —
-a false positive costs the reader more trust than a missed suggestion.
+a false positive costs the reader more trust than a missed discrepancy.
 
 Severity scale used throughout:
 
 - `critical` — exploitable vulnerability, data loss, or will break things for users
-- `warning` — likely bug, measurable regression, or misleading documentation
-- `suggestion` — a real improvement worth considering, not a style preference
+- `warning` — likely bug, measurable regression, misleading documentation, or a claim/rule the change clearly violates
+- `minor` — a real but low-impact discrepancy, not a style preference
 
 ## Step 0 — Determine review mode
 
@@ -72,6 +101,26 @@ Fetch existing review comments so the review doesn't repeat points a human
 thread already covers.
 
 If the PR is closed or merged, say so and ask whether to proceed anyway.
+
+## Step 1b — Collect the claims and the project rules
+
+**Claims.** List what the developer says the change achieves, each as a short
+checkable statement with its source (PR body, linked issue, commit message):
+
+```bash
+gh pr view <N> --repo <owner>/<repo> --json body,commits
+gh issue view <issue> --repo <owner>/<repo>    # for each issue the PR closes or references
+```
+
+Include stated test results, behavior ("now retries on 503") and scope ("no
+behavior change"); skip language that can't be checked.
+
+**Project rules.** Look in the PR head's checkout (or via
+`gh api .../contents/<path>?ref=<headRefOid>`) for `CLAUDE.md`, `AGENTS.md`,
+`CONTRIBUTING.md`, `docs/` (ADRs, design docs, specs), architecture sections
+of the README, and linter/formatter configs. Note the rules that apply to the
+changed files. If none exist, say so in the report's review notes rather than
+implying rules were checked.
 
 ## Step 2 — Filter noise
 
@@ -143,14 +192,18 @@ turn** so they run in parallel. Each agent prompt contains:
    what to flag, what not to flag, and how to behave per tier
 2. PR context: repo, number, title, body, base/head branch
 3. The scope's tier
-4. The scope's file list with each file's patch hunks (paste them in — agents
+4. The claims and applicable project rules from Step 1b, with their sources
+   — the agent verifies the claims its files bear on and checks its files
+   against the rules, in addition to hunting defects
+5. The scope's file list with each file's patch hunks (paste them in — agents
    should not re-fetch the PR)
-5. For `full` tier: how to read surrounding code — if the PR's repo is the
+6. For `full` tier: how to read surrounding code — if the PR's repo is the
    repo checked out in the working directory, read files directly (fetch the
    PR head with `git fetch origin pull/<N>/head` if needed); otherwise use
    `gh api repos/<owner>/<repo>/contents/<path>?ref=<headRefOid>` with
    `-H "Accept: application/vnd.github.raw"`
-6. The required output format (below)
+7. The required output format (below), and the reminder that a finding's
+   `body` says what is wrong and why, **never a fix**
 
 Each agent returns its findings as a JSON array in its final message:
 
@@ -162,11 +215,17 @@ Each agent returns its findings as a JSON array in its final message:
     "file": "src/server/auth.rs",
     "line": 142,
     "title": "Token compared with non-constant-time equality",
-    "body": "Explanation of the issue and why it matters, plus a concrete suggested fix.",
+    "basis": "defect",
+    "body": "What is wrong, where, and why it matters. No fix.",
     "confidence": "high"
   }
 ]
 ```
+
+`basis` says what the finding is measured against: `"claim: <quoted claim and
+source>"`, `"rule: <rule and file>"`, or `"defect"`. Every `claim` or `rule`
+finding must quote the claim or cite the rule, so the developer can see
+exactly what the change fails to meet.
 
 `line` is the line number **in the new version of the file** (compute it from
 the `@@ -a,b +c,d @@` hunk headers); for findings on deleted lines, set
@@ -193,6 +252,13 @@ trivial-tier ones) and:
   - already raised in the PR's existing review comments
 - **Verify** anything marked low/medium confidence by reading the actual file
   content before keeping it
+- **Strip fixes**: if a finding body proposes a remedy (a patch, "change X to
+  Y", "consider…", "add…", "use…"), rewrite it to state only the problem and
+  why it matters. If nothing is left once the remedy is removed, the finding
+  was a preference — drop it
+- **Check claims coverage**: every claim from Step 1b ends up as verified,
+  not verified (and why), or not checkable. Claims that turned out false
+  become findings
 
 A typical healthy outcome is a small number of findings. Zero findings is a
 legitimate result — say the PR looks good rather than manufacturing concerns.
@@ -211,10 +277,19 @@ user asked). Use this structure:
 | Scope | Files | Lines changed | Tier | Findings |
 |---|---|---|---|---|
 
+## Claims checked
+| Claim | Source | Result |
+|---|---|---|
+| <what the developer says the change does> | PR body / issue #N / commit abc123 | Verified / Not verified / Not checkable — <why> |
+
+## Project rules applied
+<files consulted and the rules that apply, or "none found">
+
 ## Findings
 ### <Scope>
 #### [<severity>] <title> — `<file>:<line>`
-<body>
+**Basis:** claim: "<quote>" (<source>) | rule: <rule> (`<file>`) | defect
+<what is wrong and why it matters — no fix>
 
 ## Skipped files
 <noise-filtered files and why>
@@ -228,38 +303,16 @@ user asked). Use this structure:
 <no re-reviews yet>
 ```
 
-The "Review notes" section keeps the report honest — a lite-tier diff-only
-review and a full-tier contextual review carry different weight, and the
-reader should know which they got.
+The "Review notes" section records how deep the review went (a lite-tier
+diff-only review and a full-tier contextual review carry different weight).
 
-`**Reviewed through commit:**` and the **Re-review log** section exist for
-the loop this report is part of: if this skill runs again later against the
-same PR, Step 0 finds this file and switches to re-review mode
-(`references/re-review.md`), which uses these fields to diff only what
-changed since this run and to record each subsequent round. Leave the log
-as `<no re-reviews yet>` on a first-time review — re-review appends to it,
-this step never does.
+`**Reviewed through commit:**` and the **Re-review log** are used by
+`references/re-review.md` on later rounds. Leave the log as
+`<no re-reviews yet>` on a first-time review.
 
-A finding may later grow an annotation block once a developer has responded
-to it via the `receive-pr-review` skill, or once a re-review round has
-reconciled it:
-
-```markdown
-#### [<severity>] <title> — `<file>:<line>`
-<body>
-
-> **Developer:** <note>
-**Status:** Open | Fixed | Won't Fix | Needs Clarification
-```
-
-Re-review additionally sets `Fixed (confirmed <date>)` once a fix is
-verified, and `Acknowledged` once a `Won't Fix` or resolved
-`Needs Clarification` is reconciled — see `references/re-review.md`. Only
-re-review writes those two values; a developer's own annotation stays
-within the four values above.
-
-Don't add this block yourself on a first-time review — a finding with no
-annotation is implicitly `Open`.
+Developer and reviewer notes and `Status` lines are added under a finding by
+`receive-pr-review` and by re-review. A first-time review adds none; a
+finding with no annotation is implicitly `Open`.
 
 ## Step 8 — Offer to publish
 
@@ -280,4 +333,4 @@ humans.
 - `references/ci.md` — CI scope: flag/don't-flag boundaries
 - `references/security.md` — security scope: flag/don't-flag boundaries
 - `references/publishing.md` — exact gh api calls for publishing inline comments (read only at Step 8)
-- `references/re-review.md` — full re-review flow, read only when Step 0 finds an existing report
+- `references/re-review.md` — the reviewer's side of the review ⇄ response loop and the agreement rules, read only when Step 0 finds an existing report

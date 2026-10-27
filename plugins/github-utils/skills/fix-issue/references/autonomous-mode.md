@@ -17,7 +17,7 @@ Autonomous mode governs the whole workflow, including the triage in
   reported as it happens; only the pause is removed, not the transparency.
 - **Replace every other "ask the user" moment** in `SKILL.md` — Step 1's
   closed-issue/existing-PR check, the scope check, and Step 9's
-  `Needs Clarification`/`Won't Fix` stopping condition — with one of the
+  escalated-stalemate/`Needs Clarification`/`Won't Fix` stopping condition — with one of the
   two escalation conditions below. There is no third option: nothing gets
   guessed past silently.
 - **A stale diagnosis is not itself a reason to escalate.** If Step 2's
@@ -50,7 +50,8 @@ repo, branch, PR, and issue.
    `SKILL.md`), a diagnosis keeps landing on multiple valid approaches with
    no single obviously correct one, an implementation attempt isn't
    converging after reasonable retries, or a review finding is a
-   `Won't Fix` call or an unresolved `Needs Clarification`.
+   escalated stalemate, a `critical` `Won't Fix`, or an unresolved
+   `Needs Clarification`.
 
 ## Common pitfalls
 

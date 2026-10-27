@@ -37,7 +37,7 @@ sounds.
 - Issues in unchanged code that this PR doesn't affect or make more reachable
 - "Consider using security library X" without a concrete exploitable gap
 - Secrets-handling patterns the repo already uses consistently elsewhere
-  (note it at most once as a `suggestion`, not per occurrence)
+  (note it at most once as a `minor` finding, not per occurrence)
 
 ## Per tier
 

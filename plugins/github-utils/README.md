@@ -19,7 +19,3 @@
 - `/github-utils:fix-issue`
 - `/github-utils:release`
 - `/github-utils:changelog`
-
-## Notes
-
-The skill contents were initially copied from the local standalone skills directory; `pr-review` and `receive-pr-review` have since been extended with a re-review/response loop (see each skill's `SKILL.md` for details).

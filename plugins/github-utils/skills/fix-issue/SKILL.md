@@ -209,21 +209,27 @@ Then update the issue's `## Status` line (from Step 3) to point at the PR.
 
 ## Step 9 — Review and close the loop
 
-The `pr-review` skill runs the review and `receive-pr-review` runs the
-response — those are the reviewers this workflow uses. If the project has its
+The `pr-review` skill is the reviewer and `receive-pr-review` is the
+developer's response — those are the two roles this workflow uses. The
+reviewer checks the change against what the PR claims and the project's
+rules and reports what isn't so, without proposing fixes; the developer
+(you, here) fixes it or demonstrates it isn't an issue. If the project has its
 own review process that triggers on its own, don't block it, but don't go
 looking for a project review skill, review agent, or checklist to run in place
 of `pr-review`. When `pr-review` runs, hold the change to the project's coding
 guidelines and development architecture, not only to whether the bug is fixed.
 
 This is an iteration, not a single pass — keep cycling review ⇄ response
-until one of the two stopping conditions below is met.
+until one of the two stopping conditions below is met. A finding is only
+closed when the *reviewer* is satisfied with the response, not when the
+developer says it's handled.
 
 1. Invoke the `pr-review` skill against the PR.
-2. If it comes back clean (no open findings), stop — go to "Done" below.
-3. Otherwise, invoke `receive-pr-review` to triage every open finding: fix
-   what's valid and small, describe what's valid but large, ask what's
-   unclear, push back with a reason on what's a disagreement.
+2. If every finding is settled (none open — each `Fixed (confirmed ...)` or
+   `Acknowledged`), stop — go to "Done" below.
+3. Otherwise, invoke `receive-pr-review` to answer every open finding: change
+   the code where the reviewer is right, ask where a finding is unclear, and
+   where it's wrong or out of scope, demonstrate that with evidence.
 4. Make every accepted fix by editing the source directly on the PR's own
    branch and pushing additive commits to it — the branch the PR merges. Not
    on a side branch, not in a worktree, not as a separate notes trail;
@@ -235,10 +241,11 @@ until one of the two stopping conditions below is met.
 
 **Stop iterating** when either:
 
-- `pr-review` returns clean, or
-- every remaining open item is something only the user can resolve — an
-  unanswered `Needs Clarification` question, or a `Won't Fix` the user
-  should weigh in on — with nothing left that this workflow can act on
+- `pr-review` reports agreement — every finding is `Fixed (confirmed ...)`
+  or `Acknowledged` by the reviewer, or
+- every remaining open item is something only the user can resolve — a
+  stalemate the reviewer escalated, an unanswered `Needs Clarification`
+  question, or a `critical` `Won't Fix` the user should weigh in on — with nothing left that this workflow can act on
   unilaterally. (Autonomous mode: this is escalation condition 2, not a
   stopping point that waits on the user — `references/autonomous-mode.md`.)
 

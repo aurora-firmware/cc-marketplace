@@ -19,7 +19,7 @@ Write a `review.json`:
       "path": "src/server/auth.rs",
       "line": 142,
       "side": "RIGHT",
-      "body": "**[warning] Token compared with non-constant-time equality**\n\n<finding body and suggested fix>"
+      "body": "**[warning] Token compared with non-constant-time equality**\n\n<what is wrong and why; no fix>"
     }
   ]
 }
@@ -38,7 +38,9 @@ Rules for each comment:
   lines outside the patch hunks. If a finding points at an unchanged line
   far from the diff, don't force it — put it in the review `body` instead.
 - Prefix each comment body with the severity in bold brackets, as above, so
-  severities survive into the PR UI
+  severities survive into the PR UI. Include the finding's basis (the claim or
+  rule) in the comment; never add a suggested fix or a GitHub `suggestion`
+  block
 
 ## 2. Submit as one review
 

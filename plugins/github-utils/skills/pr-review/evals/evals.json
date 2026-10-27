@@ -5,7 +5,7 @@
       "id": 0,
       "name": "full-tier-source-pr",
       "prompt": "Please review this PR before I merge it: https://github.com/aurora-firmware/the-intern/pull/19 — write the review to a local markdown file. Do NOT post anything to GitHub.",
-      "expected_output": "A pr-19-review.md report classifying the 4 changed files by scope, source scope tiered as full (637+/49-), with deduplicated severity-tagged findings anchored to file:line, plus a skipped-files and review-notes section. No comments posted to GitHub.",
+      "expected_output": "A pr-19-review.md report classifying the 4 changed files by scope, source scope tiered as full (637+/49-), with a Claims checked table (what the PR body/commits say the change does, each marked verified / not verified / not checkable), a Project rules applied section, and deduplicated severity-tagged findings anchored to file:line, each stating a Basis (claim, rule or defect) and what is wrong and why. No finding proposes a fix (no patch, no 'change X to Y', no 'consider'). Plus a skipped-files and review-notes section. No comments posted to GitHub.",
       "files": []
     },
     {
@@ -37,7 +37,19 @@
       "files": [
         {
           "path": "pr-19-review.md",
-          "content": "# PR Review: aurora-firmware/the-intern#19 — bob chat + admin_rpc improvements\n\n## Summary\n2 findings from the prior round.\n\n| Scope | Files | Lines changed | Tier | Findings |\n|---|---|---|---|---|\n| source | 2 | 470 | full | 2 |\n\n## Findings\n### Source\n#### [warning] `close()` races interleaved notification frames — `the-intern/service/crates/bob/src/client/admin_rpc.rs:149`\nThe close handshake reads one frame and assumes it's the close response; a notification arriving first would be misread as the response.\n\n> **Developer:** Fixed in `037369533` — close() now loops with is_notification and discards notification frames until the close response arrives.\n**Status:** Fixed\n\n#### [suggestion] `params.session` sent by the client is silently ignored by the server — `the-intern/service/crates/bob/src/cli/commands/chat.rs:209`\n`build_chat_send_params` sets `params.session` but nothing on the server side reads it.\n**Status:** Open\n\n## Skipped files\nNone.\n\n## Review notes\nFull-tier review, source surrounding code read for both files.\n\n**Reviewed through commit:** `54955c026`\n\n## Re-review log\n<no re-reviews yet>\n"
+          "content": "# PR Review: aurora-firmware/the-intern#19 — bob chat + admin_rpc improvements\n\n## Summary\n2 findings from the prior round.\n\n| Scope | Files | Lines changed | Tier | Findings |\n|---|---|---|---|---|\n| source | 2 | 470 | full | 2 |\n\n## Findings\n### Source\n#### [warning] `close()` races interleaved notification frames — `the-intern/service/crates/bob/src/client/admin_rpc.rs:149`\nThe close handshake reads one frame and assumes it's the close response; a notification arriving first would be misread as the response.\n\n> **Developer:** Fixed in `037369533` — close() now loops with is_notification and discards notification frames until the close response arrives.\n**Status:** Fixed\n\n#### [minor] `params.session` sent by the client is silently ignored by the server — `the-intern/service/crates/bob/src/cli/commands/chat.rs:209`\n`build_chat_send_params` sets `params.session` but nothing on the server side reads it.\n**Status:** Open\n\n## Skipped files\nNone.\n\n## Review notes\nFull-tier review, source surrounding code read for both files.\n\n**Reviewed through commit:** `54955c026`\n\n## Re-review log\n<no re-reviews yet>\n"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "re-review-rejects-unsupported-dispute",
+      "prompt": "Please re-review https://github.com/aurora-firmware/the-intern/pull/19 — I already have a pr-19-review.md, and the developer has responded to it. Don't touch GitHub.",
+      "expected_output": "Step 0 detects the existing report and switches to re-review mode. For the Won't Fix finding whose only justification is a bare 'this is intentional', the reviewer does not accept it: it sets Status back to Open and adds a **Reviewer:** note saying specifically that the justification cites no code, test, doc or rule showing the behavior is intended, and that the discrepancy therefore stands. The reviewer note does NOT suggest how to fix the issue. The finding is not marked Acknowledged. The Re-review log records the reopen, and the summary tells the user the loop has not reached agreement and the developer must answer the reviewer's note. No comments posted to GitHub.",
+      "files": [
+        {
+          "path": "pr-19-review.md",
+          "content": "# PR Review: aurora-firmware/the-intern#19 — bob chat + admin_rpc improvements\n\n## Summary\n1 finding.\n\n| Scope | Files | Lines changed | Tier | Findings |\n|---|---|---|---|---|\n| source | 1 | 470 | full | 1 |\n\n## Claims checked\n| Claim | Source | Result |\n|---|---|---|\n| \"chat sessions are scoped per client\" | PR body | Not verified — see finding |\n\n## Project rules applied\nNone found.\n\n## Findings\n### Source\n#### [warning] `params.session` sent by the client is silently ignored by the server — `the-intern/service/crates/bob/src/cli/commands/chat.rs:209`\n**Basis:** claim: \"chat sessions are scoped per client\" (PR body)\n`build_chat_send_params` sets `params.session` but nothing on the server side reads it, so sessions are not scoped per client as the PR states.\n\n> **Developer:** This is intentional.\n**Status:** Won't Fix\n\n## Skipped files\nNone.\n\n## Review notes\nFull-tier review.\n\n**Reviewed through commit:** `23ffe0eb7`\n\n## Re-review log\n<no re-reviews yet>\n"
         }
       ]
     }
